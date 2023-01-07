@@ -14,13 +14,14 @@ inputField.addEventListener('input', debounce(onInputSearch, DEBOUNCE_DELAY));
 function onInputSearch(event) {
   const inputValue = event.target.value.trim();
 
+  clearHtmlMarkup();
+
   if (inputValue === '') {
-    listUl.innerHTML = '';
-    divContainer.innerHTML = '';
+    return;
   }
 
-  if (inputValue) {
-    fetchCountries(inputValue).then(data => {
+  fetchCountries(inputValue)
+    .then(data => {
       if (data.length > 10) {
         Notiflix.Notify.info(
           'Too many matches found. Please enter a more specific name.'
@@ -28,14 +29,19 @@ function onInputSearch(event) {
         return;
       }
 
-      renderCountryList(data);
+      if (data.length < 10 && data.length > 1) {
+        renderCountryList(data);
+      }
+
       if (data.length === 1) {
         listUl.innerHTML = '';
 
         renderCountryInfo(data);
       }
+    })
+    .catch(err => {
+      Notiflix.Notify.failure('Oops, there is no country with that name');
     });
-  }
 }
 
 function renderCountryList(data) {
@@ -66,4 +72,9 @@ function renderCountryInfo(data) {
     )
     .join('');
   divContainer.innerHTML = markup;
+}
+
+function clearHtmlMarkup() {
+  listUl.innerHTML = '';
+  divContainer.innerHTML = '';
 }
